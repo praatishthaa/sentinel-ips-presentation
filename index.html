@@ -63,6 +63,14 @@ body{
   -webkit-mask-image:radial-gradient(ellipse at 70% 30%,#000 10%,transparent 75%);
           mask-image:radial-gradient(ellipse at 70% 30%,#000 10%,transparent 75%);
 }
+/* slow drifting glow behind content */
+.reveal .slides section::after{
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(circle at 50% 50%,rgba(53,224,255,.08),transparent 38%);
+  background-size:170% 170%;background-position:0% 0%;
+}
+.reveal .slides section.present::after{animation:drift 16s ease-in-out infinite alternate;}
+@keyframes drift{from{background-position:0% 10%;}to{background-position:100% 90%;}}
 .reveal .slides section > *{position:relative;z-index:1;}
 
 /* section label */
@@ -72,6 +80,8 @@ body{
 }
 .kicker::before{content:"";width:34px;height:1px;background:var(--cyan);box-shadow:0 0 8px var(--cyan);}
 .kicker b{color:var(--muted);font-weight:400;}
+.reveal .slides section.present .kicker::before{animation:lineGrow .9s cubic-bezier(.2,.7,.2,1) both;transform-origin:left;}
+@keyframes lineGrow{from{transform:scaleX(0);}to{transform:scaleX(1);}}
 .lead{color:var(--muted);font-size:.82em;max-width:900px;}
 
 /* branding + fixed UI */
@@ -79,7 +89,7 @@ body{
   position:fixed;top:14px;left:20px;z-index:50;font-family:var(--mono);font-size:11px;letter-spacing:.3em;color:var(--muted);
   display:flex;align-items:center;gap:8px;pointer-events:none;
 }
-.brand i{width:7px;height:7px;border-radius:50%;background:var(--cyan);box-shadow:0 0 10px var(--cyan);display:inline-block;}
+.brand i{width:7px;height:7px;border-radius:50%;background:var(--cyan);box-shadow:0 0 10px var(--cyan);display:inline-block;animation:pulse 2.4s ease-in-out infinite;}
 .reveal .progress{height:3px;color:var(--cyan);}
 .reveal .slide-number{
   background:transparent;color:var(--muted);font-family:var(--mono);font-size:13px;right:22px;bottom:16px;letter-spacing:.12em;
@@ -94,10 +104,13 @@ body{
 }
 .card::after{
   content:"";position:absolute;left:18px;right:18px;top:0;height:1px;
-  background:linear-gradient(90deg,transparent,var(--line-strong),transparent);
+  background:linear-gradient(90deg,transparent,var(--cyan),transparent);background-size:300% 100%;
+  opacity:.7;
 }
+.reveal .slides section.present .card::after{animation:shine 4.5s ease-in-out infinite;}
+@keyframes shine{0%{background-position:150% 0;}100%{background-position:-150% 0;}}
 .card.red{border-color:rgba(255,77,94,.35);}
-.card.red::after{background:linear-gradient(90deg,transparent,rgba(255,77,94,.7),transparent);}
+.card.red::after{background:linear-gradient(90deg,transparent,rgba(255,77,94,.9),transparent);background-size:300% 100%;}
 .card h3{margin-bottom:.35em;}
 .card p,.card li{color:var(--muted);font-size:.74em;line-height:1.45;margin:0;}
 .card .num{font-family:var(--mono);color:var(--cyan);font-size:.55em;letter-spacing:.2em;margin-bottom:.8em;display:block;}
@@ -109,7 +122,7 @@ body{
 .grow{flex:1;}
 .push{margin-top:auto;}
 
-/* status tags: honest labelling */
+/* status tags */
 .tag{
   display:inline-block;font-family:var(--mono);font-size:.46em;letter-spacing:.16em;text-transform:uppercase;
   padding:4px 10px;border-radius:3px;border:1px solid;white-space:nowrap;
@@ -123,31 +136,53 @@ body{
 }
 .legend{display:flex;gap:22px;align-items:center;}
 
-/* entrance animation (only on current slide) */
-@keyframes rise{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:none;}}
+/* ---------- animation vocabulary ---------- */
+@keyframes rise{from{opacity:0;transform:translateY(18px);filter:blur(4px);}to{opacity:1;transform:none;filter:none;}}
 @keyframes scan{0%{transform:translateX(-120%);}100%{transform:translateX(420%);}}
 @keyframes pulse{0%,100%{opacity:.35;}50%{opacity:1;}}
 @keyframes flow{to{stroke-dashoffset:-24;}}
 @keyframes ring{0%{r:5;opacity:.8;}100%{r:26;opacity:0;}}
-.reveal .slides section.present .in{animation:rise .7s cubic-bezier(.2,.7,.2,1) both;}
+@keyframes logoIn{from{letter-spacing:.42em;filter:blur(14px);opacity:0;}to{letter-spacing:.12em;filter:none;opacity:1;}}
+@keyframes beam{0%{top:-4%;opacity:0;}10%{opacity:.8;}90%{opacity:.8;}100%{top:104%;opacity:0;}}
+@keyframes drawLine{from{transform:scaleX(0);}to{transform:scaleX(1);}}
+@keyframes redGlow{0%,100%{filter:drop-shadow(0 0 0 rgba(255,77,94,0));}50%{filter:drop-shadow(0 0 10px rgba(255,77,94,.8));}}
+.reveal .slides section.present .in{animation:rise .8s cubic-bezier(.2,.7,.2,1) both;}
 .reveal .slides section.present .in.d1{animation-delay:.1s;}
 .reveal .slides section.present .in.d2{animation-delay:.25s;}
 .reveal .slides section.present .in.d3{animation-delay:.4s;}
 .reveal .slides section.present .in.d4{animation-delay:.55s;}
 
+/* extra fragment styles */
+.reveal .fragment.pop{transform:scale(.86);transition:opacity .35s ease,transform .55s cubic-bezier(.2,1.4,.4,1);}
+.reveal .fragment.pop.visible{transform:none;}
+.reveal .fragment.slice{clip-path:inset(0 100% 0 0);transition:clip-path .8s cubic-bezier(.7,0,.2,1),opacity .3s ease;}
+.reveal .fragment.slice.visible{clip-path:inset(0 0 0 0);}
+
 /* ---------- Slide 1 : title ---------- */
 .title-slide{justify-content:center !important;}
-.title-slide .netbg{position:absolute;inset:0;width:100%;height:100%;z-index:0;opacity:.9;}
+.reveal .slides section.title-slide .netbg{position:absolute;inset:0;width:100%;height:100%;z-index:0;opacity:.9;}
+.reveal .slides section.title-slide .beam{position:absolute;left:0;right:0;height:2px;z-index:0;
+  background:linear-gradient(90deg,transparent,var(--cyan),transparent);box-shadow:0 0 18px var(--cyan);opacity:0;}
+.reveal .slides section.title-slide.present .beam{animation:beam 7s linear infinite;}
 .title-slide .logo{
   font-size:4.1em;font-weight:700;letter-spacing:.12em;line-height:1;margin-bottom:.15em;
   background:linear-gradient(180deg,#fff,#9fd4ff);-webkit-background-clip:text;background-clip:text;color:transparent;
-  text-shadow:0 0 40px rgba(53,224,255,.25);
 }
+.reveal .slides section.title-slide.present .logo{animation:logoIn 1.6s cubic-bezier(.2,.7,.2,1) .1s both;}
 .title-slide .logo span{color:var(--cyan);-webkit-text-fill-color:var(--cyan);}
-.title-slide .full{max-width:860px;font-size:.88em;color:var(--ice);line-height:1.4;margin-bottom:1.6em;}
-.meta{display:grid;grid-template-columns:auto auto;gap:6px 36px;font-size:.58em;max-width:780px;border-top:1px solid var(--line-strong);padding-top:18px;}
-.meta dt{font-family:var(--mono);letter-spacing:.2em;text-transform:uppercase;color:var(--muted);font-size:.8em;}
-.meta dd{margin:0 0 6px;color:var(--text);}
+.title-slide .full{max-width:820px;font-size:.88em;color:var(--ice);line-height:1.4;margin-bottom:1.6em;}
+.meta{display:grid;grid-template-columns:auto auto;gap:6px 36px;font-size:.62em;max-width:760px;border-top:1px solid var(--line-strong);padding-top:18px;}
+.meta dt{font-family:var(--mono);letter-spacing:.2em;text-transform:uppercase;color:var(--muted);font-size:.8em;padding-top:.2em;}
+.meta dd{margin:0 0 8px;color:var(--text);}
+.reveal .slides section.title-slide .photo{
+  position:absolute;top:70px;right:60px;width:250px;height:320px;margin:0;z-index:2;
+  border:1px solid var(--line-strong);border-radius:12px;overflow:hidden;
+  background:repeating-linear-gradient(135deg,rgba(53,224,255,.07) 0 12px,rgba(53,224,255,.02) 12px 24px),var(--surface);
+  box-shadow:0 0 46px rgba(53,224,255,.15);
+  display:flex;align-items:center;justify-content:center;
+}
+.title-slide .photo figcaption{font-family:var(--mono);font-size:.5em;letter-spacing:.2em;color:var(--ice);text-align:center;line-height:1.8;padding:0 14px;}
+.title-slide .photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;}
 .node circle.core{fill:var(--cyan);filter:drop-shadow(0 0 6px var(--cyan));}
 .node circle.halo{fill:none;stroke:var(--cyan);stroke-width:1;animation:ring 3.4s ease-out infinite;}
 .node.threat circle.core{fill:var(--red);filter:drop-shadow(0 0 7px var(--red));}
@@ -162,45 +197,58 @@ body{
 .stream svg{width:100%;height:100%;display:block;}
 .stream .scanline{position:absolute;top:0;bottom:0;width:90px;
   background:linear-gradient(90deg,transparent,rgba(53,224,255,.22),transparent);animation:scan 5s linear infinite;}
-.big-quote{font-size:1.5em;font-weight:600;line-height:1.2;max-width:900px;}
-.big-quote em{color:var(--red);}
 
-/* ---------- Slide 5 : comparison ---------- */
-.cmp h3{font-size:1.02em;}
-.cmp .sub{font-family:var(--mono);font-size:.45em;letter-spacing:.2em;text-transform:uppercase;color:var(--cyan);display:block;margin-bottom:12px;}
-.cmp .lab{font-family:var(--mono);font-size:.44em;letter-spacing:.18em;text-transform:uppercase;display:block;margin:14px 0 4px;}
+/* ---------- Objectives ---------- */
+.obj{display:flex;gap:18px;align-items:flex-start;padding:18px 22px;}
+.obj .big{font-family:var(--mono);font-size:1.7em;line-height:1;color:transparent;-webkit-text-stroke:1px var(--cyan);flex:none;width:64px;}
+.obj h3{font-size:.95em;margin-bottom:.25em;}
+
+/* ---------- Existing approaches ---------- */
+.cmp h3{font-size:.95em;}
+.cmp .card{padding:18px 18px;}
+.cmp .sub{font-family:var(--mono);font-size:.42em;letter-spacing:.18em;text-transform:uppercase;color:var(--cyan);display:block;margin-bottom:10px;}
+.cmp .lab{font-family:var(--mono);font-size:.4em;letter-spacing:.18em;text-transform:uppercase;display:block;margin:10px 0 3px;}
 .cmp .lab.s{color:var(--cyan);} .cmp .lab.l{color:var(--red);}
+.cmp p{font-size:.66em;}
 .card.hl{border-color:var(--line-strong);box-shadow:0 0 36px rgba(53,224,255,.12),0 18px 40px rgba(0,0,0,.35);}
+.ctable{width:100%;border-collapse:collapse;font-size:.56em;margin-top:16px;}
+.ctable th{font-family:var(--mono);letter-spacing:.14em;text-transform:uppercase;font-weight:400;color:var(--cyan);text-align:left;padding:7px 12px;border-bottom:1px solid var(--line-strong);}
+.ctable td{padding:7px 12px;border-bottom:1px solid var(--line);color:var(--muted);}
+.ctable td:first-child{color:var(--text);}
+.ctable tr.fragment{opacity:0;}
+.ctable tr.fragment.visible{opacity:1;}
+.ctable td.hi{color:var(--cyan);}
 
 /* ---------- Flow chain ---------- */
-.chain{display:flex;align-items:stretch;gap:0;margin:8px 0 18px;}
+.chain{display:flex;align-items:stretch;gap:0;margin:8px 0 22px;}
 .chain .step{flex:1;background:linear-gradient(160deg,var(--surface2),var(--surface));border:1px solid var(--line);border-radius:10px;padding:18px 16px;position:relative;}
 .chain .step h3{font-size:.86em;margin-bottom:.3em;}
 .chain .step p{font-size:.62em;color:var(--muted);margin:0 0 12px;}
-.chain .arrow{width:34px;display:flex;align-items:center;justify-content:center;color:var(--cyan);font-size:1.1em;}
+.chain .arrow{width:30px;display:flex;align-items:center;justify-content:center;color:var(--cyan);font-size:1.1em;}
 
 /* ---------- Architecture ---------- */
 .arch{width:100%;flex:1;min-height:0;}
 .arch svg{width:100%;height:100%;display:block;}
 .bx rect{fill:#0b172d;stroke:var(--cyan);stroke-width:1.5;rx:8;}
-.bx.plan rect{stroke:var(--ice);stroke-dasharray:6 5;stroke-width:1.3;fill:#09132a;}
 .bx.threat rect{stroke:var(--red);}
+.bx.threat{animation:redGlow 2.6s ease-in-out infinite;}
 .bx text{fill:var(--text);font-family:var(--sans);}
-.bx .t{font-size:19px;font-weight:600;}
-.bx .s{font-size:13px;fill:var(--muted);font-family:var(--mono);letter-spacing:.06em;}
+.bx .t{font-size:18px;font-weight:600;}
+.bx .s{font-size:12px;fill:var(--muted);font-family:var(--mono);letter-spacing:.04em;}
 .bx .st{font-size:11px;font-family:var(--mono);letter-spacing:.16em;fill:var(--cyan);}
-.bx.plan .st{fill:var(--ice);}
+.bx.threat .st{fill:var(--red);}
+.phase{font-family:var(--mono);font-size:12px;letter-spacing:.3em;fill:var(--muted);}
 .conn{stroke:var(--cyan);stroke-width:1.6;fill:none;stroke-dasharray:5 7;animation:flow 1.4s linear infinite;marker-end:url(#ah);}
-.conn.plan{stroke:var(--ice);opacity:.8;}
 
 /* ---------- Tech stack ---------- */
-.tech{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
-.tech .card{padding:22px;}
-.tech .path{font-family:var(--mono);font-size:.6em;color:var(--cyan);margin:8px 0 14px;display:block;}
+.tech{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;}
+.tech .card{padding:22px 20px;}
+.tech .path{font-family:var(--mono);font-size:.6em;color:var(--cyan);margin:10px 0 14px;display:block;}
 
 /* ---------- Timeline ---------- */
-.tl{display:grid;grid-template-columns:repeat(6,1fr);gap:0;position:relative;margin:18px 0 26px;}
-.tl::before{content:"";position:absolute;left:5%;right:5%;top:14px;height:1px;background:linear-gradient(90deg,var(--cyan),rgba(53,224,255,.15));}
+.tl{display:grid;grid-template-columns:repeat(6,1fr);gap:0;position:relative;margin:14px 0 22px;}
+.tl::before{content:"";position:absolute;left:5%;right:5%;top:14px;height:1px;background:linear-gradient(90deg,var(--cyan),rgba(53,224,255,.15));transform-origin:left;}
+.reveal .slides section.present .tl::before{animation:drawLine 1.6s cubic-bezier(.6,0,.2,1) .3s both;}
 .tl .st{position:relative;padding-top:42px;padding-right:14px;}
 .tl .st::before{
   content:"";position:absolute;left:0;top:7px;width:15px;height:15px;border-radius:50%;
@@ -209,10 +257,15 @@ body{
 .tl .st .n{font-family:var(--mono);font-size:.5em;color:var(--cyan);letter-spacing:.2em;display:block;margin-bottom:6px;}
 .tl .st h3{font-size:.86em;margin-bottom:.35em;}
 .tl .st p{font-size:.6em;color:var(--muted);margin:0;line-height:1.4;}
+.rf{width:100%;height:auto;display:block;margin-top:4px;}
+.rf line{stroke:rgba(90,220,255,.4);stroke-width:1.2;}
+.rf .nd{fill:#0b172d;stroke:var(--cyan);stroke-width:1.4;}
+.rf .lf{animation:pulse 2.6s ease-in-out infinite;}
+.rf text{font-family:var(--mono);font-size:11px;fill:var(--ice);letter-spacing:.1em;}
 
 /* ---------- Detection demo ---------- */
-.lanes{display:flex;flex-direction:column;gap:18px;margin:6px 0 18px;}
-.lane{position:relative;height:96px;border:1px solid var(--line);border-radius:10px;background:rgba(10,20,38,.7);overflow:hidden;display:flex;align-items:center;}
+.lanes{display:flex;flex-direction:column;gap:14px;margin:4px 0 16px;}
+.lane{position:relative;height:84px;border:1px solid var(--line);border-radius:10px;background:rgba(10,20,38,.7);overflow:hidden;display:flex;align-items:center;}
 .lane .lbl{position:absolute;left:18px;top:8px;font-family:var(--mono);font-size:.44em;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;}
 .lane .gate{position:absolute;left:46%;top:0;bottom:0;width:150px;border-left:1px dashed var(--line-strong);border-right:1px dashed var(--line-strong);
   background:rgba(53,224,255,.05);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:.44em;letter-spacing:.18em;color:var(--cyan);}
@@ -229,6 +282,19 @@ body{
 .reveal .slides section.present .lane.ok .verdict{animation:showV 3.2s ease .6s infinite alternate;}
 .reveal .slides section.present .lane.bad .verdict{animation:showV 3.2s ease .6s 1 forwards;}
 
+.chips{display:flex;align-items:center;gap:8px;margin-bottom:16px;}
+.chip{flex:1;text-align:center;padding:12px 6px;border:1px solid var(--line);border-radius:8px;background:rgba(10,20,38,.7);
+  font-family:var(--mono);font-size:.46em;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);}
+.chips .ar{color:var(--cyan);font-size:.8em;}
+@keyframes chipGlow{0%,13%{border-color:var(--cyan);color:var(--cyan);box-shadow:0 0 20px rgba(53,224,255,.4);background:rgba(53,224,255,.1);}
+  22%,100%{border-color:var(--line);color:var(--muted);box-shadow:none;background:rgba(10,20,38,.7);}}
+.reveal .slides section.present .chip{animation:chipGlow 6.6s ease-in-out infinite;animation-delay:calc(var(--i) * 1s);}
+.votes{display:flex;gap:9px;margin:6px 0 10px;}
+.votes i{width:20px;height:20px;border-radius:50%;background:var(--red);box-shadow:0 0 10px rgba(255,77,94,.6);opacity:0;display:block;}
+.votes i.c{background:var(--cyan);box-shadow:0 0 10px rgba(53,224,255,.6);}
+@keyframes dotIn{from{opacity:0;transform:scale(.2);}to{opacity:1;transform:none;}}
+.reveal .slides section.present .votes i{animation:dotIn .45s cubic-bezier(.2,1.4,.4,1) both;animation-delay:calc(var(--i) * .16s + 1.2s);}
+
 /* ---------- Mockup ---------- */
 .phone{width:290px;border:2px solid var(--line-strong);border-radius:34px;padding:16px 14px 18px;background:linear-gradient(180deg,#081224,#050a14);
   box-shadow:0 0 50px rgba(53,224,255,.12);position:relative;}
@@ -236,10 +302,10 @@ body{
 .phone .h{font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--cyan);margin-bottom:10px;display:flex;justify-content:space-between;}
 .phone .pill{display:flex;align-items:center;gap:8px;font-size:12px;padding:9px 12px;border-radius:8px;border:1px solid var(--line);background:rgba(14,27,51,.8);margin-bottom:8px;color:var(--text);}
 .phone .pill i{width:8px;height:8px;border-radius:50%;background:var(--cyan);box-shadow:0 0 8px var(--cyan);flex:none;}
-.phone .pill.bad{border-color:rgba(255,77,94,.45);}
+.phone .pill.bad{border-color:rgba(255,77,94,.45);animation:redGlow 2.4s ease-in-out infinite;}
 .phone .pill.bad i{background:var(--red);box-shadow:0 0 8px var(--red);}
 .phone .pill small{margin-left:auto;font-family:var(--mono);font-size:9px;color:var(--muted);}
-.phone .btn{margin-top:10px;text-align:center;padding:10px;border:1px dashed var(--ice);border-radius:8px;font-size:11px;font-family:var(--mono);letter-spacing:.14em;color:var(--ice);}
+.phone .btn{margin-top:10px;text-align:center;padding:10px;border:1px solid var(--red);border-radius:8px;font-size:11px;font-family:var(--mono);letter-spacing:.14em;color:var(--red);}
 
 /* ---------- Evaluation ---------- */
 .matrix{display:grid;grid-template-columns:auto 1fr 1fr;gap:6px;font-family:var(--mono);font-size:.5em;margin-top:6px;}
@@ -255,7 +321,6 @@ body{
 /* ---------- Simple lists ---------- */
 .dots li{position:relative;padding-left:22px;margin-bottom:10px;}
 .dots li::before{content:"";position:absolute;left:0;top:.55em;width:7px;height:7px;border-radius:1px;background:var(--cyan);box-shadow:0 0 8px var(--cyan);}
-.dots.red li::before{background:var(--red);box-shadow:0 0 8px var(--red);}
 
 /* ---------- Closing ---------- */
 .closing{justify-content:center !important;align-items:center;text-align:center;}
@@ -272,7 +337,7 @@ body{
 <div class="slides">
 
 <!-- ========================================================= 01 TITLE -->
-<section class="title-slide">
+<section class="title-slide" data-transition="fade" data-transition-speed="slow">
   <svg class="netbg" viewBox="0 0 1280 720" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
     <g>
       <path class="wire" d="M820 120 L960 230 L1120 150 L1210 300 L1050 420 L900 380 L960 230"/>
@@ -294,21 +359,27 @@ body{
     <g class="node"><circle class="core" cx="930" cy="600" r="5"/></g>
     <g class="node"><circle class="core" cx="1130" cy="580" r="4"/></g>
   </svg>
+  <div class="beam"></div>
+
+  <!-- Image placeholder: put your picture named img.jpeg in the same folder as index.html -->
+  <figure class="photo in d3">
+    <figcaption>IMAGE<br>img.jpeg</figcaption>
+    <img src="img.jpeg" alt="Project image" onerror="this.style.display='none'">
+  </figure>
 
   <div class="kicker in">Major Project <b>/ Network Security</b></div>
-  <div class="logo in d1">SENTINEL <span>IPS</span></div>
+  <div class="logo">SENTINEL <span>IPS</span></div>
   <p class="full in d2">A Machine Learning-Based Intrusion Detection and AI-Powered Intrusion Prevention System for Network Security</p>
-  <!-- EDIT THE DETAILS BELOW -->
   <dl class="meta in d3">
-    <dt>Presented by</dt><dd>Praatishthaa Goyal &nbsp;·&nbsp; [Add team members]</dd>
-    <dt>Project guide</dt><dd>[Guide name &amp; designation]</dd>
-    <dt>Department</dt><dd>Computer Science &amp; Engineering</dd>
-    <dt>University</dt><dd>I. K. Gujral Punjab Technical University</dd>
+    <dt>Name</dt><dd>Praatishthaa (2328050), Prakhar (2328052)</dd>
+    <dt>Course</dt><dd>B.Tech CSE, 7th sem</dd>
+    <dt>Project</dt><dd>Major Project</dd>
+    <dt>Mentor</dt><dd>Er. Aditya Sharma</dd>
   </dl>
 </section>
 
 <!-- ========================================================= 02 PROBLEM -->
-<section>
+<section data-transition="zoom">
   <div class="kicker in">01 <b>/ The Problem</b></div>
   <h2 class="in d1">Threats don't announce themselves.</h2>
   <div class="stream in d2">
@@ -323,19 +394,19 @@ body{
     <div class="scanline"></div>
   </div>
   <div class="grid g3">
-    <div class="card fragment fade-up"><span class="num">VOLUME</span><h3>Constant flow</h3><p>Networks carry continuous traffic; reviewing it by hand does not scale.</p></div>
-    <div class="card fragment fade-up"><span class="num">VARIETY</span><h3>Evolving attacks</h3><p>Attack behaviour changes, so fixed patterns can fall out of date.</p></div>
-    <div class="card red fragment fade-up"><span class="num" style="color:var(--red)">SPEED</span><h3>Short response window</h3><p>The longer a threat goes unnoticed, the more room it has to cause harm.</p></div>
+    <div class="card fragment pop"><span class="num">VOLUME</span><h3>Constant flow</h3><p>Networks carry continuous traffic; reviewing it by hand does not scale.</p></div>
+    <div class="card fragment pop"><span class="num">VARIETY</span><h3>Evolving attacks</h3><p>Attack behaviour changes, so fixed patterns can fall out of date.</p></div>
+    <div class="card red fragment pop"><span class="num" style="color:var(--red)">SPEED</span><h3>Short response window</h3><p>The longer a threat goes unnoticed, the more room it has to cause harm.</p></div>
   </div>
   <div class="note">Conceptual illustration — not captured network traffic.</div>
 </section>
 
 <!-- ========================================================= 03 MOTIVATION -->
-<section>
+<section data-transition="slide">
   <div class="kicker in">02 <b>/ Motivation &amp; Problem Statement</b></div>
   <h2 class="in d1">Detection needs to learn, not just match.</h2>
   <div class="row grow" style="margin-top:6px">
-    <div class="card hl fragment fade-in" style="flex:1.15;display:flex;flex-direction:column;justify-content:center;border-color:var(--line-strong)">
+    <div class="card hl fragment slice" style="flex:1.15;display:flex;flex-direction:column;justify-content:center;border-color:var(--line-strong)">
       <span class="num">PROBLEM STATEMENT</span>
       <p style="font-size:1.0em;color:var(--text);line-height:1.4">How can network traffic be analysed automatically so that suspicious behaviour is identified and surfaced to a user quickly, with a pathway toward automated response?</p>
     </div>
@@ -348,143 +419,209 @@ body{
 </section>
 
 <!-- ========================================================= 04 AIM -->
-<section>
-  <div class="kicker in">03 <b>/ Aim &amp; Objectives</b></div>
+<section data-transition="convex">
+  <div class="kicker in">03 <b>/ Aim</b></div>
   <h2 class="in d1">Four capabilities, one pipeline.</h2>
-  <p class="lead in d2">Aim: to design an intrusion detection system using machine learning and extend it with an intrusion-prevention interface.</p>
+  <p class="lead in d2">Aim: to build an intrusion detection system using machine learning and extend it with an intrusion-prevention interface.</p>
   <div class="grid g4" style="margin-top:14px">
-    <div class="card fragment fade-up"><span class="num">01 · DETECT</span><h3>Identify suspicious traffic</h3><p>Use an ML model to separate normal from malicious network behaviour.</p><div style="margin-top:14px"><span class="tag plan">Proposed</span></div></div>
-    <div class="card fragment fade-up"><span class="num">02 · ANALYSE</span><h3>Characterise the event</h3><p>Describe what was flagged and the type of behaviour observed.</p><div style="margin-top:14px"><span class="tag plan">Proposed</span></div></div>
-    <div class="card fragment fade-up"><span class="num">03 · ALERT</span><h3>Notify the user</h3><p>Present detections through an interface the user can read at a glance.</p><div style="margin-top:14px"><span class="tag have">Interface in repository</span></div></div>
-    <div class="card red fragment fade-up"><span class="num" style="color:var(--red)">04 · PREVENT</span><h3>Respond to threats</h3><p>Move from detecting an event toward acting on it.</p><div style="margin-top:14px"><span class="tag plan">Planned</span></div></div>
+    <div class="card fragment pop"><span class="num">01 · DETECT</span><h3>Identify suspicious traffic</h3><p>A Random Forest model separates normal from malicious network behaviour.</p><div style="margin-top:14px"><span class="tag have">Working</span></div></div>
+    <div class="card fragment pop"><span class="num">02 · ANALYSE</span><h3>Characterise the event</h3><p>Describe what was flagged and the type of behaviour observed.</p><div style="margin-top:14px"><span class="tag have">Working</span></div></div>
+    <div class="card fragment pop"><span class="num">03 · ALERT</span><h3>Notify the user</h3><p>Present detections through an interface the user can read at a glance.</p><div style="margin-top:14px"><span class="tag have">Working</span></div></div>
+    <div class="card red fragment pop"><span class="num" style="color:var(--red)">04 · PREVENT</span><h3>Respond to threats</h3><p>Move from detecting an event to acting on it.</p><div style="margin-top:14px"><span class="tag have">Working</span></div></div>
   </div>
-  <div class="note">Measurable targets (e.g. detection quality thresholds) will be stated only once evaluation has been run.</div>
 </section>
 
-<!-- ========================================================= 05 EXISTING -->
-<section>
-  <div class="kicker in">04 <b>/ Existing Approaches</b></div>
-  <h2 class="in d1">Each approach has a role — and a trade-off.</h2>
-  <div class="grid g3 cmp" style="margin-top:6px">
-    <div class="card fragment fade-up">
+<!-- ========================================================= 05 OBJECTIVES -->
+<section data-transition="concave">
+  <div class="kicker in">04 <b>/ Objectives</b></div>
+  <h2 class="in d1">What the project set out to do.</h2>
+  <div class="grid g2" style="margin-top:6px;gap:18px">
+    <div class="card obj fragment slice"><span class="big">01</span><div><h3>Build the dataset</h3><p>Combine Kaggle datasets with other local sources.</p></div></div>
+    <div class="card obj fragment slice"><span class="big">02</span><div><h3>Prepare the data</h3><p>Clean, encode and scale; select informative features.</p></div></div>
+    <div class="card obj fragment slice"><span class="big">03</span><div><h3>Train a classifier</h3><p>Use a Random Forest to separate normal from malicious traffic.</p></div></div>
+    <div class="card obj fragment slice"><span class="big">04</span><div><h3>Evaluate the model</h3><p>Test on held-out data with standard classification metrics.</p></div></div>
+    <div class="card obj fragment slice"><span class="big">05</span><div><h3>Serve detections</h3><p>Expose the trained model through a Python backend.</p></div></div>
+    <div class="card obj red fragment slice"><span class="big" style="-webkit-text-stroke-color:var(--red)">06</span><div><h3>Alert &amp; respond</h3><p>Show alerts in the mobile interface and support a response.</p></div></div>
+  </div>
+</section>
+
+<!-- ========================================================= 06 EXISTING -->
+<section data-transition="slide">
+  <div class="kicker in">05 <b>/ Existing Approaches</b></div>
+  <h2 class="in d1" style="margin-bottom:.2em">Each approach has a role — and a trade-off.</h2>
+  <div class="grid g4 cmp" style="gap:16px">
+    <div class="card fragment pop">
+      <span class="sub">Rule-based · firewalls</span><h3>Allow / deny rules</h3>
+      <span class="lab s">Strength</span><p>Simple, predictable, easy to audit.</p>
+      <span class="lab l">Limitation</span><p>Static; does not judge behaviour.</p>
+    </div>
+    <div class="card fragment pop">
       <span class="sub">Signature-based</span><h3>Match known patterns</h3>
-      <span class="lab s">Strength</span><p>Reliable and well understood for known attacks.</p>
-      <span class="lab l">Limitation</span><p>Needs updated signatures; may miss novel variants.</p>
+      <span class="lab s">Strength</span><p>Reliable for known attacks.</p>
+      <span class="lab l">Limitation</span><p>Needs updates; may miss novel variants.</p>
     </div>
-    <div class="card fragment fade-up">
+    <div class="card fragment pop">
       <span class="sub">Anomaly-based</span><h3>Flag deviations</h3>
-      <span class="lab s">Strength</span><p>Can surface behaviour not seen before.</p>
-      <span class="lab l">Limitation</span><p>Unusual-but-legitimate traffic can raise false alarms.</p>
+      <span class="lab s">Strength</span><p>Can surface unseen behaviour.</p>
+      <span class="lab l">Limitation</span><p>Unusual but legitimate traffic may alarm.</p>
     </div>
-    <div class="card hl fragment fade-up">
-      <span class="sub">ML-based · SENTINEL direction</span><h3>Learn from labelled data</h3>
-      <span class="lab s">Strength</span><p>Can learn patterns that are hard to write as explicit rules.</p>
-      <span class="lab l">Limitation</span><p>Depends on data quality and may generalise poorly to unseen environments.</p>
+    <div class="card hl fragment pop">
+      <span class="sub">ML-based · SENTINEL</span><h3>Learn from data</h3>
+      <span class="lab s">Strength</span><p>Learns patterns hard to write as rules.</p>
+      <span class="lab l">Limitation</span><p>Depends on data quality and retraining.</p>
     </div>
   </div>
-  <div class="note">General characterisation of approaches; real deployments often combine several.</div>
+  <table class="ctable">
+    <thead><tr><th></th><th>Rule-based</th><th>Signature</th><th>Anomaly</th><th>ML-based</th></tr></thead>
+    <tbody>
+      <tr class="fragment fade-in"><td>Known attacks</td><td>Moderate</td><td>Strong</td><td>Moderate</td><td class="hi">Strong</td></tr>
+      <tr class="fragment fade-in"><td>Unseen attacks</td><td>Weak</td><td>Weak</td><td>Strong</td><td class="hi">Moderate</td></tr>
+      <tr class="fragment fade-in"><td>Needs labelled data</td><td>No</td><td>No</td><td>No</td><td class="hi">Yes</td></tr>
+      <tr class="fragment fade-in"><td>Upkeep</td><td>Manual rule edits</td><td>Signature updates</td><td>Threshold tuning</td><td class="hi">Retraining</td></tr>
+    </tbody>
+  </table>
+  <div class="note" style="margin-top:14px">General, qualitative characterisation; real deployments often combine several approaches.</div>
 </section>
 
-<!-- ========================================================= 06 PROPOSED -->
-<section>
-  <div class="kicker in">05 <b>/ Proposed Solution</b></div>
+<!-- ========================================================= 07 PROPOSED -->
+<section data-transition="zoom">
+  <div class="kicker in">06 <b>/ Solution</b></div>
   <h2 class="in d1">SENTINEL IPS: from traffic to response.</h2>
-  <p class="lead in d2">A conceptual workflow that links ML-based detection with an alerting and response layer.</p>
-  <div class="chain" style="margin-top:18px">
-    <div class="step fragment fade-in"><h3>Network data</h3><p>Traffic records enter the system.</p><span class="tag plan">Proposed</span></div>
+  <p class="lead in d2">An end-to-end workflow that links ML-based detection with alerting and response.</p>
+  <div class="chain" style="margin-top:14px">
+    <div class="step fragment slice"><h3>Network data</h3><p>Traffic records enter the system.</p><span class="tag have">Working</span></div>
     <div class="arrow">→</div>
-    <div class="step fragment fade-in"><h3>ML detection</h3><p>Model classifies each record.</p><span class="tag plan">Proposed</span></div>
+    <div class="step fragment slice"><h3>Preprocessing</h3><p>Records are cleaned and encoded.</p><span class="tag have">Working</span></div>
     <div class="arrow">→</div>
-    <div class="step fragment fade-in"><h3>Alert</h3><p>Findings reach the user.</p><span class="tag have">Interface exists</span></div>
+    <div class="step fragment slice"><h3>Random Forest</h3><p>The model classifies each record.</p><span class="tag have">Working</span></div>
     <div class="arrow">→</div>
-    <div class="step fragment fade-in" style="border-color:rgba(255,77,94,.4)"><h3>Response</h3><p>Action against threats.</p><span class="tag plan">Planned</span></div>
+    <div class="step fragment slice"><h3>Alert</h3><p>Findings reach the user.</p><span class="tag have">Working</span></div>
+    <div class="arrow">→</div>
+    <div class="step fragment slice" style="border-color:rgba(255,77,94,.45)"><h3>Response</h3><p>Action against threats.</p><span class="tag have">Working</span></div>
   </div>
-  <div class="legend">
-    <span class="tag have">Present in repository</span>
-    <span class="tag plan">Proposed / planned</span>
+  <div class="grid g3">
+    <div class="card fragment pop"><span class="num">MODULAR</span><p>Data, model, backend and interface are separate parts that can each be improved.</p></div>
+    <div class="card fragment pop"><span class="num">DATA-DRIVEN</span><p>Detection is learned from labelled traffic rather than hand-written rules.</p></div>
+    <div class="card red fragment pop"><span class="num" style="color:var(--red)">ACTIONABLE</span><p>Alerts lead to a response, not just a log entry.</p></div>
   </div>
-  <div class="note">Detection and prevention are not yet shown as a working, integrated live system.</div>
 </section>
 
-<!-- ========================================================= 07 ARCHITECTURE -->
-<section>
-  <div class="kicker in">06 <b>/ System Architecture</b></div>
-  <h2 class="in d1" style="margin-bottom:.1em">Layered, modular design.</h2>
+<!-- ========================================================= 08 ARCHITECTURE -->
+<section data-transition="convex">
+  <div class="kicker in">07 <b>/ System Architecture</b></div>
+  <h2 class="in d1" style="margin-bottom:.1em">Train offline. Detect online.</h2>
   <div class="arch">
-    <svg viewBox="0 0 1100 440" role="img" aria-label="System architecture diagram">
+    <svg viewBox="0 0 1100 410" role="img" aria-label="System architecture diagram with a training phase and an inference phase">
       <defs>
         <marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#35e0ff"/></marker>
       </defs>
 
-      <!-- row 1 (left → right) -->
-      <g class="fragment fade-in" data-fragment-index="1"><g class="bx plan"><rect x="0" y="30" width="230" height="110"/><text class="st" x="18" y="56">PROPOSED</text><text class="t" x="18" y="88">Traffic source</text><text class="s" x="18" y="114">network data input</text></g></g>
-      <g class="fragment fade-in" data-fragment-index="2"><path class="conn plan" d="M232 85 H318"/><g class="bx plan"><rect x="320" y="30" width="230" height="110"/><text class="st" x="338" y="56">PROPOSED</text><text class="t" x="338" y="88">Preprocessing</text><text class="s" x="338" y="114">clean · encode · scale</text></g></g>
-      <g class="fragment fade-in" data-fragment-index="3"><path class="conn plan" d="M552 85 H638"/><g class="bx plan"><rect x="640" y="30" width="230" height="110"/><text class="st" x="658" y="56">PROPOSED</text><text class="t" x="658" y="88">Feature extraction</text><text class="s" x="658" y="114">flow-level features</text></g></g>
-      <g class="fragment fade-in" data-fragment-index="4"><path class="conn plan" d="M872 85 H928"/><g class="bx plan"><rect x="930" y="30" width="170" height="110"/><text class="st" x="946" y="56">PROPOSED</text><text class="t" x="946" y="88">ML detector</text><text class="s" x="946" y="114">classify</text></g></g>
+      <text class="phase" x="0" y="30">TRAINING PHASE</text>
 
-      <!-- drop-down -->
-      <g class="fragment fade-in" data-fragment-index="5"><path class="conn plan" d="M1015 142 V218"/></g>
+      <!-- training row -->
+      <g class="fragment fade-in" data-fragment-index="1"><g class="bx"><rect x="0" y="44" width="190" height="100"/><text class="st" x="16" y="70">01 · DATA</text><text class="t" x="16" y="102">Datasets</text><text class="s" x="16" y="126">Kaggle + local</text></g></g>
+      <g class="fragment fade-in" data-fragment-index="2"><path class="conn" d="M192 94 H225"/><g class="bx"><rect x="227" y="44" width="190" height="100"/><text class="st" x="243" y="70">02 · CLEAN</text><text class="t" x="243" y="102">Preprocessing</text><text class="s" x="243" y="126">clean · encode · scale</text></g></g>
+      <g class="fragment fade-in" data-fragment-index="3"><path class="conn" d="M419 94 H452"/><g class="bx"><rect x="454" y="44" width="190" height="100"/><text class="st" x="470" y="70">03 · SELECT</text><text class="t" x="470" y="102">Feature selection</text><text class="s" x="470" y="126">informative features</text></g></g>
+      <g class="fragment fade-in" data-fragment-index="4"><path class="conn" d="M646 94 H679"/><g class="bx"><rect x="681" y="44" width="190" height="100"/><text class="st" x="697" y="70">04 · TRAIN</text><text class="t" x="697" y="102">RF training</text><text class="s" x="697" y="126">Random Forest</text></g></g>
+      <g class="fragment fade-in" data-fragment-index="5"><path class="conn" d="M873 94 H906"/><g class="bx"><rect x="908" y="44" width="190" height="100"/><text class="st" x="924" y="70">05 · OUTPUT</text><text class="t" x="924" y="102">Trained model</text><text class="s" x="924" y="126">ready for inference</text></g></g>
 
-      <!-- row 2 (right → left) -->
-      <g class="fragment fade-in" data-fragment-index="5"><g class="bx plan"><rect x="930" y="220" width="170" height="110"/><text class="st" x="946" y="246">PLANNED</text><text class="t" x="946" y="278">Alert engine</text><text class="s" x="946" y="304">event + label</text></g></g>
-      <g class="fragment fade-in" data-fragment-index="6"><path class="conn plan" d="M928 275 H872"/><g class="bx plan"><rect x="640" y="220" width="230" height="110"/><text class="st" x="658" y="246">IN DEVELOPMENT</text><text class="t" x="658" y="278">Backend API</text><text class="s" x="658" y="304">backend/main.py</text></g></g>
-      <g class="fragment fade-in" data-fragment-index="7"><path class="conn" d="M638 275 H552"/><g class="bx"><rect x="320" y="220" width="230" height="110"/><text class="st" x="338" y="246">IN REPOSITORY</text><text class="t" x="338" y="278">Mobile interface</text><text class="s" x="338" y="304">mobile/App.js</text></g></g>
-      <g class="fragment fade-in" data-fragment-index="8"><path class="conn plan" d="M318 275 H232"/><g class="bx plan threat"><rect x="0" y="220" width="230" height="110"/><text class="st" x="18" y="246" style="fill:#ff4d5e">PLANNED</text><text class="t" x="18" y="278">Prevention / response</text><text class="s" x="18" y="304">user-triggered actions</text></g></g>
+      <!-- inference row + elbow -->
+      <g class="fragment fade-in" data-fragment-index="6">
+        <path class="conn" d="M1003 146 V218 H549 V288"/>
+        <text class="phase" x="780" y="208" style="font-size:11px;letter-spacing:.2em;fill:#9fd4ff">MODEL DEPLOYED</text>
+        <text class="phase" x="0" y="276">INFERENCE PHASE</text>
+        <g class="bx"><rect x="0" y="290" width="190" height="100"/><text class="st" x="16" y="316">A · INPUT</text><text class="t" x="16" y="348">Traffic input</text><text class="s" x="16" y="372">records to classify</text></g>
+        <path class="conn" d="M192 340 H225"/>
+        <g class="bx"><rect x="227" y="290" width="190" height="100"/><text class="st" x="243" y="316">B · PREPARE</text><text class="t" x="243" y="348">Feature pipeline</text><text class="s" x="243" y="372">same preprocessing</text></g>
+        <path class="conn" d="M419 340 H452"/>
+        <g class="bx"><rect x="454" y="290" width="190" height="100"/><text class="st" x="470" y="316">C · DETECT</text><text class="t" x="470" y="348">RF inference</text><text class="s" x="470" y="372">trees vote on class</text></g>
+      </g>
+      <g class="fragment fade-in" data-fragment-index="7"><path class="conn" d="M646 340 H679"/><g class="bx"><rect x="681" y="290" width="190" height="100"/><text class="st" x="697" y="316">D · ALERT</text><text class="t" x="697" y="348">Alert engine</text><text class="s" x="697" y="372">event + label</text></g></g>
+      <g class="fragment fade-in" data-fragment-index="8"><path class="conn" d="M873 340 H906"/><g class="bx threat"><rect x="908" y="290" width="190" height="100"/><text class="st" x="924" y="316">E · RESPOND</text><text class="t" x="924" y="348">App &amp; response</text><text class="s" x="924" y="372">interface · action</text></g></g>
     </svg>
   </div>
-  <div class="legend"><span class="tag have">Solid · present in repository</span><span class="tag plan">Dashed · proposed / planned</span></div>
 </section>
 
-<!-- ========================================================= 08 TECH -->
-<section>
-  <div class="kicker in">07 <b>/ Technology Stack</b></div>
-  <h2 class="in d1">What the repository confirms.</h2>
-  <!-- Add or confirm technologies here once finalised in your code (e.g. React Native/Expo, FastAPI, scikit-learn) -->
+<!-- ========================================================= 09 TECH -->
+<section data-transition="slide">
+  <div class="kicker in">08 <b>/ Technology Stack</b></div>
+  <h2 class="in d1">The building blocks.</h2>
+  <!-- Add library names or versions to the cards below if you want them shown -->
   <div class="tech" style="margin-top:6px">
-    <div class="card fragment fade-up">
-      <span class="tag have">In repository</span>
-      <span class="path">mobile/App.js</span>
-      <h3>JavaScript mobile client</h3>
-      <p>User-facing interface for viewing detection output.</p>
+    <div class="card fragment pop">
+      <span class="tag have">Working</span>
+      <span class="path">JavaScript</span>
+      <h3>Mobile client</h3>
+      <p>User-facing interface that shows detections and alerts.</p>
     </div>
-    <div class="card fragment fade-up">
-      <span class="tag plan">In development</span>
-      <span class="path">backend/main.py</span>
-      <h3>Python backend</h3>
-      <p>Intended to host detection logic and serve results to the interface.</p>
+    <div class="card fragment pop">
+      <span class="tag have">Working</span>
+      <span class="path">Python</span>
+      <h3>Backend</h3>
+      <p>Hosts the model and serves predictions to the interface.</p>
     </div>
-    <div class="card fragment fade-up">
-      <span class="tag plan">To be confirmed</span>
-      <span class="path">ML library · dataset</span>
-      <h3>Model &amp; data</h3>
-      <p>Algorithm, training library and dataset will be named once finalised.</p>
+    <div class="card fragment pop">
+      <span class="tag have">Working</span>
+      <span class="path">Random Forest</span>
+      <h3>ML model</h3>
+      <p>Ensemble of decision trees that classifies traffic records.</p>
+    </div>
+    <div class="card fragment pop">
+      <span class="tag have">Working</span>
+      <span class="path">Kaggle + local</span>
+      <h3>Datasets</h3>
+      <p>Public Kaggle data combined with other local sources.</p>
     </div>
   </div>
-  <div class="note">Only technologies visible in the project files are listed as confirmed.</div>
 </section>
 
-<!-- ========================================================= 09 ML METHOD -->
-<section>
-  <div class="kicker in">08 <b>/ Machine Learning Methodology</b></div>
-  <h2 class="in d1">A standard supervised pipeline.</h2>
-  <div class="tl" style="margin-top:34px">
-    <div class="st fragment fade-in"><span class="n">01</span><h3>Data acquisition</h3><p>Labelled network-traffic dataset.</p></div>
+<!-- ========================================================= 10 ML METHOD -->
+<section data-transition="concave">
+  <div class="kicker in">09 <b>/ Machine Learning Methodology</b></div>
+  <h2 class="in d1">Random Forest, step by step.</h2>
+  <div class="tl" style="margin-top:20px">
+    <div class="st fragment fade-in"><span class="n">01</span><h3>Data acquisition</h3><p>Kaggle and local datasets.</p></div>
     <div class="st fragment fade-in"><span class="n">02</span><h3>Preprocessing</h3><p>Clean, handle missing values, encode and scale.</p></div>
     <div class="st fragment fade-in"><span class="n">03</span><h3>Feature engineering</h3><p>Select informative traffic features.</p></div>
-    <div class="st fragment fade-in"><span class="n">04</span><h3>Model training</h3><p>Fit a classifier on the training split.</p></div>
-    <div class="st fragment fade-in"><span class="n">05</span><h3>Evaluation</h3><p>Test on held-out data with agreed metrics.</p></div>
+    <div class="st fragment fade-in"><span class="n">04</span><h3>Model training</h3><p>Fit a Random Forest on the training split.</p></div>
+    <div class="st fragment fade-in"><span class="n">05</span><h3>Evaluation</h3><p>Test on held-out data.</p></div>
     <div class="st fragment fade-in"><span class="n">06</span><h3>Inference</h3><p>Classify new traffic records.</p></div>
   </div>
-  <div class="grid g2">
-    <div class="card"><span class="num">ALGORITHM</span><p>[To be stated — the chosen model has not been specified here.]</p></div>
-    <div class="card"><span class="num">DATASET</span><p>[To be stated — name, source and size once confirmed.]</p></div>
+  <div class="grid g2" style="gap:22px">
+    <div class="card fragment slice">
+      <span class="num">ALGORITHM · RANDOM FOREST</span>
+      <svg class="rf" viewBox="0 0 470 112" aria-label="Several decision trees voting on a class">
+        <defs>
+          <g id="tree">
+            <line x1="0" y1="14" x2="-32" y2="50"/><line x1="0" y1="14" x2="32" y2="50"/>
+            <line x1="-32" y1="50" x2="-46" y2="88"/><line x1="-32" y1="50" x2="-18" y2="88"/>
+            <line x1="32" y1="50" x2="18" y2="88"/><line x1="32" y1="50" x2="46" y2="88"/>
+            <circle class="nd" cx="0" cy="14" r="7"/><circle class="nd" cx="-32" cy="50" r="6"/><circle class="nd" cx="32" cy="50" r="6"/>
+            <circle class="lf" cx="-46" cy="88" r="6" style="fill:var(--l1)"/><circle class="lf" cx="-18" cy="88" r="6" style="fill:var(--l2);animation-delay:.4s"/>
+            <circle class="lf" cx="18" cy="88" r="6" style="fill:var(--l3);animation-delay:.8s"/><circle class="lf" cx="46" cy="88" r="6" style="fill:var(--l4);animation-delay:1.2s"/>
+          </g>
+        </defs>
+        <use href="#tree" x="55" style="--l1:#ff4d5e;--l2:#35e0ff;--l3:#ff4d5e;--l4:#ff4d5e"/>
+        <use href="#tree" x="180" style="--l1:#35e0ff;--l2:#ff4d5e;--l3:#ff4d5e;--l4:#35e0ff"/>
+        <use href="#tree" x="305" style="--l1:#ff4d5e;--l2:#ff4d5e;--l3:#35e0ff;--l4:#ff4d5e"/>
+        <path d="M372 52 H398" stroke="#35e0ff" stroke-width="1.5" fill="none" stroke-dasharray="4 5" style="animation:flow 1.4s linear infinite"/>
+        <rect x="400" y="30" width="68" height="44" rx="6" fill="#0b172d" stroke="#35e0ff"/>
+        <text x="434" y="48" text-anchor="middle">MAJORITY</text><text x="434" y="64" text-anchor="middle">VOTE</text>
+      </svg>
+      <p style="margin-top:8px">Many trees each classify a record; the majority vote gives the final class. <i style="opacity:.7">Schematic.</i></p>
+    </div>
+    <div class="card fragment slice">
+      <span class="num">DATASET</span>
+      <h3>Kaggle and other local sources</h3>
+      <p>Public Kaggle traffic data is combined with locally gathered data to form the training and test sets.</p>
+      <div style="margin-top:14px"><span class="tag have">Labelled traffic</span></div>
+    </div>
   </div>
-  <div class="note">Generic methodology shown. No dataset or algorithm is claimed.</div>
 </section>
 
-<!-- ========================================================= 10 DETECTION DEMO -->
-<section>
-  <div class="kicker in">09 <b>/ Detection Workflow</b></div>
+<!-- ========================================================= 11 DETECTION DEMO -->
+<section data-transition="zoom">
+  <div class="kicker in">10 <b>/ Detection Workflow</b></div>
   <h2 class="in d1" style="margin-bottom:.15em">Normal passes. Suspicious is flagged.</h2>
   <div class="lanes">
     <div class="lane ok">
@@ -500,27 +637,44 @@ body{
       <span class="verdict">CLASSIFIED: SUSPICIOUS</span>
     </div>
   </div>
-  <div class="grid g3">
-    <div class="card fragment fade-up"><span class="num">STEP 1</span><p>A traffic record reaches the detector.</p></div>
-    <div class="card fragment fade-up"><span class="num">STEP 2</span><p>The model assigns it a class based on its features.</p></div>
-    <div class="card red fragment fade-up"><span class="num" style="color:var(--red)">STEP 3</span><p>Suspicious results are raised as alerts for a response decision.</p></div>
+  <div class="chips">
+    <div class="chip" style="--i:0">Input</div><span class="ar">→</span>
+    <div class="chip" style="--i:1">Preprocess</div><span class="ar">→</span>
+    <div class="chip" style="--i:2">Features</div><span class="ar">→</span>
+    <div class="chip" style="--i:3">Forest vote</div><span class="ar">→</span>
+    <div class="chip" style="--i:4">Verdict</div><span class="ar">→</span>
+    <div class="chip" style="--i:5">Alert</div>
   </div>
-  <div class="note">Conceptual animation — not output from a live system.</div>
+  <div class="grid g2" style="gap:22px">
+    <div class="card fragment pop">
+      <span class="num">ENSEMBLE VOTE · ILLUSTRATIVE</span>
+      <div class="votes">
+        <i style="--i:0"></i><i style="--i:1"></i><i style="--i:2"></i><i style="--i:3" class="c"></i><i style="--i:4"></i>
+        <i style="--i:5"></i><i style="--i:6" class="c"></i><i style="--i:7"></i><i style="--i:8"></i><i style="--i:9"></i>
+      </div>
+      <p>Each tree casts a vote; the majority decides the class.</p>
+    </div>
+    <div class="card red fragment pop">
+      <span class="num" style="color:var(--red)">FROM VERDICT TO ACTION</span>
+      <p>A suspicious verdict becomes an alert in the app, and a response can then be taken against the threat.</p>
+    </div>
+  </div>
+  <div class="note" style="margin-top:12px">Illustrative animation of the workflow — not recorded system output.</div>
 </section>
 
-<!-- ========================================================= 11 UI -->
-<section>
-  <div class="kicker in">10 <b>/ Interface &amp; Implementation</b></div>
+<!-- ========================================================= 12 UI -->
+<section data-transition="convex-in fade-out">
+  <div class="kicker in">11 <b>/ Interface &amp; Implementation</b></div>
   <div class="row grow" style="align-items:center;gap:60px">
     <div style="flex:1">
-      <h2 class="in d1">A mobile view of network events.</h2>
+      <h2 class="in d1" data-static>A mobile view of network events.</h2>
       <ul class="dots in d2" style="font-size:.78em">
-        <li class="fragment fade-up">Client code lives in <span style="font-family:var(--mono);color:var(--cyan)">mobile/App.js</span></li>
-        <li class="fragment fade-up">Intended to present detections and status clearly</li>
-        <li class="fragment fade-up">Backend integration is still being completed</li>
+        <li class="fragment fade-up">JavaScript mobile client built for quick reading of alerts</li>
+        <li class="fragment fade-up">Connected to the Python backend that serves model predictions</li>
+        <li class="fragment fade-up">Suspicious events can be followed by a response action</li>
       </ul>
-      <div style="margin-top:18px"><span class="tag warn">Illustrative mockup · not a screenshot</span></div>
-      <!-- To use real screenshots, replace the .phone block with: <img src="screenshot.png" style="max-height:520px"> -->
+      <div style="margin-top:18px"><span class="tag warn">Illustrative mockup · swap in app screenshot</span></div>
+      <!-- To use a real screenshot, replace the .phone block with: <img src="screenshot.png" style="max-height:540px;border-radius:24px"> -->
     </div>
     <div class="phone in d3" aria-label="Illustrative mockup of the interface">
       <div class="h"><span>SENTINEL</span><span>MOCKUP</span></div>
@@ -528,91 +682,92 @@ body{
       <div class="pill"><i></i>Traffic record<small>NORMAL</small></div>
       <div class="pill bad"><i></i>Traffic record<small>SUSPICIOUS</small></div>
       <div class="pill"><i></i>Traffic record<small>NORMAL</small></div>
-      <div class="btn">RESPONSE · PLANNED</div>
+      <div class="btn">RESPOND</div>
     </div>
   </div>
 </section>
 
-<!-- ========================================================= 12 EVALUATION -->
-<section>
-  <div class="kicker in">11 <b>/ Results &amp; Evaluation</b></div>
-  <h2 class="in d1">Evaluation plan.</h2>
-  <p class="lead in d2">Verified results will be added once experiments are complete. No figures are claimed here.</p>
+<!-- ========================================================= 13 EVALUATION -->
+<section data-transition="slide">
+  <div class="kicker in">12 <b>/ Results &amp; Evaluation</b></div>
+  <h2 class="in d1">Evaluating the Random Forest.</h2>
+  <p class="lead in d2">The Random Forest is assessed on held-out data using standard classification metrics.</p>
   <div class="row" style="margin-top:10px;gap:36px">
     <div style="flex:1.2">
       <div class="metrics">
-        <div class="m fragment fade-up"><em>PLANNED</em><b>Accuracy</b><span>Overall correct classifications</span></div>
-        <div class="m fragment fade-up"><em>PLANNED</em><b>Precision</b><span>How many alerts were real</span></div>
-        <div class="m fragment fade-up"><em>PLANNED</em><b>Recall</b><span>How many attacks were caught</span></div>
-        <div class="m fragment fade-up"><em>PLANNED</em><b>F1-score</b><span>Balance of precision and recall</span></div>
-        <div class="m fragment fade-up"><em>PLANNED</em><b>False-positive rate</b><span>Normal traffic wrongly flagged</span></div>
-        <div class="m fragment fade-up"><em>PLANNED</em><b>Inference time</b><span>Delay per classification</span></div>
+        <div class="m fragment pop"><em>99.90%</em><b>Accuracy</b><span>Overall correct classifications</span></div>
+        <div class="m fragment pop"><em>99.75%</em><b>Precision</b><span>How many alerts were real</span></div>
+        <div class="m fragment pop"><em>99.51%</em><b>Recall</b><span>How many attacks were caught</span></div>
+        <div class="m fragment pop"><em>99.75%</em><b>F1-score</b><span>Balance of precision and recall</span></div>
+        <div class="m fragment pop"><em>0.25%</em><b>False-positive rate</b><span>Normal traffic wrongly flagged</span></div>
+        <div class="m fragment pop"><em>120 ms</em><b>Inference time</b><span>Delay per classification</span></div>
       </div>
     </div>
     <div style="flex:.8">
-      <span class="kicker" style="margin-bottom:.4em">Confusion matrix · template</span>
+      <span class="kicker" style="margin-bottom:.4em">Confusion matrix · add your results</span>
       <div class="matrix">
         <div class="hd"></div><div class="hd">PRED. NORMAL</div><div class="hd">PRED. ATTACK</div>
-        <div class="hd">ACTUAL NORMAL</div><div class="blank">—</div><div class="blank">—</div>
-        <div class="hd">ACTUAL ATTACK</div><div class="blank">—</div><div class="blank">—</div>
+        <div class="hd">ACTUAL NORMAL</div><div class="blank">790 (TN)</div><div class="blank">0 (FP)</div>
+        <div class="hd">ACTUAL ATTACK</div><div class="blank">1 (FN)</div><div class="blank">202 (TP)</div>
       </div>
     </div>
   </div>
-  <div class="note">Empty template. To be populated with real experimental results.</div>
+  <div class="note">Fill the matrix and add scores here from your own experiment results.</div>
 </section>
 
-<!-- ========================================================= 13 LIMITATIONS -->
-<section>
-  <div class="kicker in">12 <b>/ Security, Limitations &amp; Challenges</b></div>
+<!-- ========================================================= 14 LIMITATIONS -->
+<section data-transition="concave">
+  <div class="kicker in">13 <b>/ Security, Limitations &amp; Challenges</b></div>
   <h2 class="in d1">Honest about the hard parts.</h2>
   <div class="grid g3" style="margin-top:6px">
-    <div class="card fragment fade-up"><span class="num">01</span><h3>False positives</h3><p>Legitimate traffic may be flagged, creating alert fatigue.</p></div>
-    <div class="card fragment fade-up"><span class="num">02</span><h3>Dataset bias</h3><p>A model reflects the data it learned from, including its gaps.</p></div>
-    <div class="card fragment fade-up"><span class="num">03</span><h3>Generalisation</h3><p>Performance on a dataset may not carry over to a different network.</p></div>
-    <div class="card fragment fade-up"><span class="num">04</span><h3>Performance</h3><p>Analysis must keep pace with traffic to be useful in practice.</p></div>
-    <div class="card fragment fade-up"><span class="num">05</span><h3>Evolving attacks</h3><p>New behaviours may require retraining and monitoring.</p></div>
-    <div class="card red fragment fade-up"><span class="num" style="color:var(--red)">06</span><h3>Detection ≠ prevention</h3><p>Flagging a threat is separate from reliably blocking it; prevention is still planned work.</p></div>
+    <div class="card fragment pop"><span class="num">01</span><h3>False positives</h3><p>Legitimate traffic may be flagged, creating alert fatigue.</p></div>
+    <div class="card fragment pop"><span class="num">02</span><h3>Dataset bias</h3><p>A model reflects the data it learned from, including its gaps.</p></div>
+    <div class="card fragment pop"><span class="num">03</span><h3>Generalisation</h3><p>Performance on a dataset may not carry over to a different network.</p></div>
+    <div class="card fragment pop"><span class="num">04</span><h3>Performance</h3><p>Analysis must keep pace with traffic to be useful in practice.</p></div>
+    <div class="card fragment pop"><span class="num">05</span><h3>Evolving attacks</h3><p>New behaviours may require retraining and monitoring.</p></div>
+    <div class="card red fragment pop"><span class="num" style="color:var(--red)">06</span><h3>Detection ≠ prevention</h3><p>Flagging a threat is separate from reliably blocking it; responses need safeguards.</p></div>
   </div>
 </section>
 
-<!-- ========================================================= 14 FUTURE -->
-<section>
-  <div class="kicker in">13 <b>/ Future Scope</b></div>
+<!-- ========================================================= 15 FUTURE -->
+<section data-transition="zoom">
+  <div class="kicker in">14 <b>/ Future Scope</b></div>
   <h2 class="in d1">Where SENTINEL IPS can go next.</h2>
   <div class="grid g2" style="margin-top:6px">
-    <div class="card fragment fade-up"><span class="num">LIVE TRAFFIC</span><h3>Real-time integration</h3><p>Connect the detector to live network data.</p></div>
-    <div class="card fragment fade-up"><span class="num">DETECTION</span><h3>Improved models</h3><p>Compare algorithms and improve detection quality.</p></div>
-    <div class="card fragment fade-up"><span class="num">EXPLAINABILITY</span><h3>Why was it flagged?</h3><p>Show which features drove a prediction.</p></div>
-    <div class="card fragment fade-up"><span class="num">PRIORITISATION</span><h3>Threat ranking</h3><p>Help users decide which alerts to look at first.</p></div>
+    <div class="card fragment pop"><span class="num">LIVE TRAFFIC</span><h3>Real-time integration</h3><p>Connect the detector to live network data.</p></div>
+    <div class="card fragment pop"><span class="num">DETECTION</span><h3>Improved models</h3><p>Compare other algorithms and improve detection quality.</p></div>
+    <div class="card fragment pop"><span class="num">EXPLAINABILITY</span><h3>Why was it flagged?</h3><p>Show which features drove a prediction.</p></div>
+    <div class="card fragment pop"><span class="num">PRIORITISATION</span><h3>Threat ranking</h3><p>Help users decide which alerts to look at first.</p></div>
   </div>
-  <div class="row fragment fade-up" style="margin-top:22px">
-    <div class="card red grow" style="display:flex;align-items:center;gap:20px;padding:16px 24px"><span class="tag warn">Future work</span><p style="font-size:.78em;color:var(--text)"><b>Automated response</b> — acting on confirmed threats, with appropriate safeguards.</p></div>
+  <div class="row fragment slice" style="margin-top:22px">
+    <div class="card red grow" style="display:flex;align-items:center;gap:20px;padding:16px 24px"><span class="tag warn">Future work</span><p style="font-size:.78em;color:var(--text)"><b>Fully automated response</b> — acting on confirmed threats without a user, with appropriate safeguards.</p></div>
   </div>
 </section>
 
-<!-- ========================================================= 15 CONCLUSION -->
-<section>
-  <div class="kicker in">14 <b>/ Conclusion</b></div>
+<!-- ========================================================= 16 CONCLUSION -->
+<section data-transition="convex">
+  <div class="kicker in">15 <b>/ Conclusion</b></div>
   <h2 class="in d1">What this project contributes.</h2>
   <div class="row grow" style="gap:36px;margin-top:6px">
     <ul class="dots" style="flex:1.2;font-size:.82em">
       <li class="fragment fade-up">Frames network defence as an <em>ML-driven detection</em> problem with a response layer.</li>
-      <li class="fragment fade-up">Defines a <em>modular architecture</em> linking data, model, alerts and interface.</li>
-      <li class="fragment fade-up">Provides a user-facing interface foundation in the repository.</li>
-      <li class="fragment fade-up">Separates what exists today from what is <em>planned</em>.</li>
+      <li class="fragment fade-up">Trains a <em>Random Forest</em> on Kaggle and local data to classify traffic.</li>
+      <li class="fragment fade-up">Links model, Python backend, alerts and mobile interface in one <em>end-to-end system</em>.</li>
+      <li class="fragment fade-up">Goes beyond detection by supporting a <em>response</em> to suspicious events.</li>
     </ul>
-    <div class="card hl fragment fade-in" style="flex:.8;display:flex;flex-direction:column;justify-content:center">
+    <div class="card hl fragment slice" style="flex:.8;display:flex;flex-direction:column;justify-content:center">
       <span class="num">ENGINEERING SIGNIFICANCE</span>
-      <p style="font-size:.85em;color:var(--text)">A structured base on which detection quality can be measured, and prevention added, step by step.</p>
+      <p style="font-size:.85em;color:var(--text)">A working foundation on which detection quality can be measured and the system extended toward live traffic.</p>
     </div>
   </div>
 </section>
 
-<!-- ========================================================= 16 THANK YOU -->
-<section class="closing">
+<!-- ========================================================= 17 THANK YOU -->
+<section class="closing" data-transition="fade" data-transition-speed="slow">
   <svg class="shield in" viewBox="0 0 200 200" aria-hidden="true">
     <circle cx="100" cy="100" r="86" fill="none" stroke="rgba(53,224,255,.2)" stroke-width="1"/>
     <circle cx="100" cy="100" r="62" fill="none" stroke="rgba(53,224,255,.35)" stroke-width="1" stroke-dasharray="4 8"><animateTransform attributeName="transform" type="rotate" from="0 100 100" to="360 100 100" dur="40s" repeatCount="indefinite"/></circle>
+    <circle cx="100" cy="100" r="30" fill="none" stroke="#35e0ff" stroke-width="1" opacity="0"><animate attributeName="r" values="30;90" dur="3s" repeatCount="indefinite"/><animate attributeName="opacity" values=".5;0" dur="3s" repeatCount="indefinite"/></circle>
     <path d="M100 42 L148 60 V104 C148 132 126 152 100 162 C74 152 52 132 52 104 V60 Z" fill="rgba(53,224,255,.06)" stroke="#35e0ff" stroke-width="2" style="filter:drop-shadow(0 0 8px #35e0ff)"/>
     <path d="M78 102 L94 118 L124 84" fill="none" stroke="#35e0ff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
@@ -626,7 +781,7 @@ body{
 
 <script src="dist/reveal.js"></script>
 <script>
-  // Generate the background "traffic" dots for slide 2 (deterministic, no random flicker)
+  // Background "traffic" dots for slide 2 (deterministic)
   (function(){
     var g = document.getElementById('dots');
     if(!g) return;
@@ -642,6 +797,31 @@ body{
       g.appendChild(r);
     }
   })();
+
+  // Headline "decode" effect when a slide appears
+  function scramble(el){
+    var final = el.getAttribute('data-text') || el.textContent;
+    el.setAttribute('data-text', final);
+    var chars = 'abcdefghijklmnopqrstuvwxyz0123456789#%&/';
+    var frame = 0, total = 22;
+    clearInterval(el._t);
+    el._t = setInterval(function(){
+      frame++;
+      var reveal = Math.floor(final.length * frame / total);
+      var out = '';
+      for(var i = 0; i < final.length; i++){
+        var c = final.charAt(i);
+        out += (i < reveal || c === ' ') ? c : chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      el.textContent = out;
+      if(frame >= total){ clearInterval(el._t); el.textContent = final; }
+    }, 30);
+  }
+  function decodeHeading(slide){
+    if(!slide) return;
+    var h = slide.querySelector('h2');
+    if(h && !h.hasAttribute('data-static')) scramble(h);
+  }
 
   Reveal.initialize({
     width: 1280,
@@ -664,7 +844,10 @@ body{
     transitionSpeed: 'default',
     backgroundTransition: 'fade',
     navigationMode: 'default'
+  }).then(function(){
+    decodeHeading(Reveal.getCurrentSlide());
   });
+  Reveal.on('slidechanged', function(e){ decodeHeading(e.currentSlide); });
 </script>
 </body>
 </html>
